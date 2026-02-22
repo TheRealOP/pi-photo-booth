@@ -16,8 +16,9 @@ for _ in range(15):
 
 ret, frame = cap.read()
 if ret:
-    cv2.imwrite("photo.jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
-    print("Saved photo.jpg", frame.shape)
+    filename = datetime.now().strftime("photo_%Y%m%d_%H%M%S.jpg")
+    cv2.imwrite(filename, frame, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+    print("Saved", filename , frame.shape)
 else:
     print("Capture failed")
 
