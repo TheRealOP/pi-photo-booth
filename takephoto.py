@@ -1,13 +1,11 @@
-import cv2 
+import cv2
 
 cap = cv2.VideoCapture(0)
 
-while True:
-    ret, frame = cap.read()
-    cv2.imshow("test", frame)
+ret, frame = cap.read()
 
-    if cv2.waitKey(1) == 27:
-        break
+if ret:
+    cv2.imwrite("photo.jpg", frame)
+    print("Saved photo.jpg")
 
 cap.release()
-cv2.destroyAllWindows()
