@@ -1,11 +1,24 @@
-import cv2
+import cv2, time
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
+
+# Prefer MJPG (often sharper + higher FPS on Pi)
+cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+
+# Try 1920x1080 first, then change to 1280x720 if needed
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
+# Let auto-exposure/white balance settle
+time.sleep(0.5)
+for _ in range(15):
+    cap.read()
 
 ret, frame = cap.read()
-
 if ret:
-    cv2.imwrite("photo.jpg", frame)
-    print("Saved photo.jpg")
+    cv2.imwrite("photo.jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+    print("Saved photo.jpg", frame.shape)
+else:
+    print("Capture failed")
 
 cap.release()
