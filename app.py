@@ -23,7 +23,9 @@ class PhotoBoothApp:
 
         self.camera = Camera()
         self.camera.open()
-        self.printer = InstaxPrinter()
+        self.printer = InstaxPrinter(
+            mode="ble", device_address="FA:AB:BC:87:88:26"
+        )
 
         self.session_dir = self._new_session_dir()
         self.latest_path = Path("sessions") / "latest.jpg"
