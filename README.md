@@ -16,7 +16,7 @@ This project includes a local web kiosk page that uses Web Bluetooth and Instax 
 
 ### Install (Raspberry Pi OS)
 1. `sudo apt update`
-2. `sudo apt install -y python3 python3-venv chromium-browser`
+2. `sudo apt install -y python3 python3-venv chromium bluetooth bluez`
 3. `python3 -m venv env`
 4. `source env/bin/activate`
 5. `pip install -r requirements.txt`
@@ -30,7 +30,21 @@ The kiosk always loads the latest image from `sessions/latest.jpg`.
 
 ### Chromium kiosk command
 ```
-chromium-browser --kiosk --app=http://localhost:3000 --enable-web-bluetooth --enable-experimental-web-platform-features --noerrdialogs --disable-pinch
+chromium --kiosk --app=http://localhost:3000 --enable-web-bluetooth --enable-experimental-web-platform-features --noerrdialogs --disable-pinch
+```
+
+## Native BLE printing (no browser)
+If Web Bluetooth is unreliable, you can print directly over BLE with `bleak`.
+
+Install dependencies (already in `requirements.txt`) and run:
+```
+python instax_ble_print.py --device-name INSTAX-XXXX --image sessions/latest.jpg
+```
+
+To use BLE printing from the app, set:
+```
+export INSTAX_MODE=ble
+export INSTAX_DEVICE_NAME=INSTAX-XXXX
 ```
 
 ### Optional autostart (systemd)
