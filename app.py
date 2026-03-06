@@ -161,6 +161,7 @@ class PhotoBoothApp:
 
     def on_close(self):
         self.camera.release()
+        self.printer.close()
         self.root.destroy()
 
 

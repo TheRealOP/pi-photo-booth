@@ -237,3 +237,35 @@ def print_image(image_path, device_name=None, device_address=None, debug=False):
         await printer.disconnect()
 
     asyncio.run(runner())
+
+
+class BlePrinterSession:
+    def __init__(self, device_name=None, device_address=None, debug=False):
+        self.device_name = device_name
+        self.device_address = device_address
+        self.debug = debug
+        self._printer = InstaxBLEPrinter(
+            device_name=device_name, device_address=device_address, debug=debug
+        )
+        self._loop = asyncio.new_event_loop()
+        self._connected = False
+
+    def _run(self, coroutine):
+        asyncio.set_event_loop(self._loop)
+        return self._loop.run_until_complete(coroutine)
+
+    def connect(self):
+        if not self._connected:
+            self._run(self._printer.connect())
+            self._connected = True
+
+    def print_image(self, image_path):
+        if not self._connected:
+            self.connect()
+        self._run(self._printer.print_image(image_path))
+
+    def disconnect(self):
+        if self._connected:
+            self._run(self._printer.disconnect())
+            self._connected = False
+        self._loop.close()
