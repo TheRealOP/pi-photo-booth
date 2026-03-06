@@ -15,6 +15,7 @@ class SID(Enum):
     PRINT_IMAGE_DOWNLOAD_END = (16, 2)
     PRINT_IMAGE_DOWNLOAD_CANCEL = (16, 3)
     PRINT_IMAGE = (16, 128)
+    LED_PATTERN_SETTINGS_DOUBLE = (48, 3)
 
 
 class ResultCode(Enum):
@@ -72,8 +73,9 @@ class Response:
 
 
 class InstaxBLEConnection:
-    def __init__(self, device_name, debug=False):
-        self.device_name = device_name.upper()
+    def __init__(self, device_name, device_address=None, debug=False):
+        self.device_name = device_name.upper() if device_name else None
+        self.device_address = device_address
         self.debug = debug
         self.client = None
         self.response_event = asyncio.Event()
@@ -84,20 +86,19 @@ class InstaxBLEConnection:
         self.notify_uuid = "70954784-2d83-473d-9e5f-81e1d02d5273"
 
     async def discover(self):
-        devices = await BleakScanner.discover(5.0, return_adv=True)
+        devices = await BleakScanner.discover(6.0)
         for device in devices:
-            advertisement_data = devices[device][1]
-            if (
-                advertisement_data.local_name
-                and advertisement_data.local_name.upper() == self.device_name
-            ):
-                return device
+            if self.device_address and device.address == self.device_address:
+                return device.address
+            if self.device_name and device.name and device.name.upper() == self.device_name:
+                return device.address
         return None
 
     async def connect(self):
-        device = await self.discover()
+        device = self.device_address or await self.discover()
         if not device:
-            raise RuntimeError(f"Instax printer '{self.device_name}' not found")
+            target = self.device_name or self.device_address or "unknown"
+            raise RuntimeError(f"Instax printer '{target}' not found")
         self.client = BleakClient(device)
         await self.client.connect()
         await self.client.start_notify(self.notify_uuid, self._response_callback)
@@ -135,10 +136,13 @@ class InstaxBLEConnection:
 
 
 class InstaxBLEPrinter:
-    def __init__(self, device_name, debug=False):
+    def __init__(self, device_name=None, device_address=None, debug=False):
         self.device_name = device_name
+        self.device_address = device_address
         self.debug = debug
-        self.connection = InstaxBLEConnection(device_name, debug)
+        self.connection = InstaxBLEConnection(
+            device_name, device_address=device_address, debug=debug
+        )
         self.image_support = None
 
     async def connect(self):
@@ -183,6 +187,17 @@ class InstaxBLEPrinter:
             await self.connection.send_command(frame_payload)
 
         await self.connection.send_command(OutboundMessage(SID.PRINT_IMAGE_DOWNLOAD_END, b"").payload())
+        await asyncio.sleep(0.5)
+
+        led_payload = bytes([0x00, 0x01, 0x14, 0x00, 0x00, 0x00, 0x00])
+        try:
+            await self.connection.send_command(
+                OutboundMessage(SID.LED_PATTERN_SETTINGS_DOUBLE, led_payload).payload()
+            )
+        except Exception:
+            pass
+
+        await asyncio.sleep(0.3)
         await self.connection.send_command(OutboundMessage(SID.PRINT_IMAGE, b"").payload())
 
 
@@ -191,12 +206,13 @@ def prepare_image(image_path, image_support):
     target = (image_support.width, image_support.height)
     image = ImageOps.fit(image, target, Image.LANCZOS)
 
-    quality = 95
+    max_size = min(image_support.max_size, 55 * 1024)
+    quality = 90
     while True:
         buffer = io.BytesIO()
         image.save(buffer, format="JPEG", quality=quality)
         data = buffer.getvalue()
-        if len(data) <= image_support.max_size or quality <= 60:
+        if len(data) <= max_size or quality <= 55:
             return data
         quality -= 5
 
@@ -211,9 +227,11 @@ def slice_image(image_bytes, frame_size):
     return frames
 
 
-def print_image(image_path, device_name, debug=False):
+def print_image(image_path, device_name=None, device_address=None, debug=False):
     async def runner():
-        printer = InstaxBLEPrinter(device_name, debug)
+        printer = InstaxBLEPrinter(
+            device_name=device_name, device_address=device_address, debug=debug
+        )
         await printer.connect()
         await printer.print_image(image_path)
         await printer.disconnect()

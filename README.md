@@ -39,12 +39,14 @@ If Web Bluetooth is unreliable, you can print directly over BLE with `bleak`.
 Install dependencies (already in `requirements.txt`) and run:
 ```
 python instax_ble_print.py --device-name INSTAX-XXXX --image sessions/latest.jpg
+python instax_ble_print.py --device-address AA:BB:CC:DD:EE:FF --image sessions/latest.jpg
 ```
 
 To use BLE printing from the app, set:
 ```
 export INSTAX_MODE=ble
 export INSTAX_DEVICE_NAME=INSTAX-XXXX
+export INSTAX_DEVICE_ADDRESS=AA:BB:CC:DD:EE:FF
 ```
 
 ### Optional autostart (systemd)
