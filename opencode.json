@@ -1,0 +1,110 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["opencode-antigravity-auth@latest"],
+
+  "model": "google/gemini-2.5-flash",
+
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "description": "Fast, smart daily driver for coding and terminal tasks.",
+      "model": "google/gemini-2.5-flash",
+      "tools": { 
+        "write": true, "edit": true, "bash": true, "task": true,
+        "read": true, "glob": true, "grep": true 
+      }
+    },
+
+    "build-deep": {
+      "mode": "primary",
+      "description": "The logic specialist for deep refactoring and hard bugs.",
+      "model": "openai/gpt-5.2-codex",
+      "tools": { 
+        "write": true, "edit": true, "bash": true, "task": true,
+        "read": true, "glob": true, "grep": true 
+      }
+    },
+
+    "plan": {
+      "mode": "primary",
+      "description": "Strategist. Calls researcher for context and build for execution.",
+      "model": "google/gemini-2.5-flash",
+      "prompt": "You are the Architect. Use 'researcher' for repo knowledge/web docs and 'code-reviewer' for logic validation. Break down complex tasks into atomic steps for the build agents.",
+      "tools": { "task": true }
+    },
+
+    "researcher": {
+      "mode": "subagent",
+      "description": "Analyzes documentation and explores the codebase.",
+      "model": "google/gemini-3-pro-preview",
+      "prompt": "You are the Long-Context Researcher. Use web search for library documentation. Map out file structures and logic flows. Do not edit files.",
+      "tools": { 
+        "webfetch": true,
+        "bash": true,
+        "read": true,
+        "glob": true,
+        "grep": true
+      }
+    },
+
+    "code-reviewer": {
+      "mode": "subagent",
+      "description": "Validation specialist. Runs tests and checks diffs.",
+      "model": "google/gemini-2.5-flash",
+      "prompt": "You are a senior reviewer. Identify edge cases, logic bugs, and style issues. Use bash to run tests if necessary.",
+      "tools": { "bash": true, "read": true }
+    },
+
+    "vault-curator": {
+      "mode": "subagent",
+      "description": "Maintains documentation in Obsidian.",
+      "model": "google/gemini-2.5-flash-lite",
+      "tools": { "write": true, "edit": true, "read": true }
+    },
+
+    "historian": {
+      "mode": "subagent",
+      "description": "Keeps a persistent log of all project activities and answers historical queries.",
+      "model": "google/gemini-pro-1.5-preview",
+      "prompt": "You are the Historian Agent. Your role is to maintain a comprehensive memory of all project actions, decisions, and outcomes. When queried, provide concise and accurate summaries or answers based on the project's historical context. Do not invent information. Your knowledge is derived from the accumulated actions of other agents.",
+      "tools": {}
+    }
+  },
+
+  "command": {
+    "quick": {
+      "description": "Fast task execution using 2.5 Flash.",
+      "agent": "build",
+      "model": "google/gemini-2.5-flash",
+      "template": "Execute the following task efficiently.\n\n$ARGUMENTS"
+    },
+    "heavy": {
+      "description": "Complex logic/refactor using 5.2 Codex.",
+      "agent": "build-deep",
+      "model": "openai/gpt-5.2-codex",
+      "template": "Deep-dive this issue. Explain your reasoning and ensure all side effects are handled.\n\n$ARGUMENTS"
+    },
+    "planit": {
+      "description": "Run a full planning & research cycle.",
+      "agent": "plan",
+      "model": "google/gemini-3-flash-preview",
+      "template": "Research the requirements and provide a high-fidelity implementation plan.\n\n$ARGUMENTS"
+    },
+    "review": {
+      "description": "Standard code review of the current diff.",
+      "agent": "code-reviewer",
+      "template": "Review current changes for footguns:\n!`git diff`"
+    },
+    "curate": {
+      "description": "Sync documentation to vault.",
+      "agent": "vault-curator",
+      "template": "Organize these thoughts into atomic Obsidian notes.\n\n$ARGUMENTS"
+    },
+    "history": {
+      "description": "Query the Historian agent about past project activities.",
+      "agent": "historian",
+      "model": "google/gemini-pro-1.5-preview",
+      "template": "Retrieve and summarize relevant historical information based on the following query:\n\n$ARGUMENTS"
+    }
+  }
+}

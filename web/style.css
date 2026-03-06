@@ -1,0 +1,124 @@
+:root {
+  --ink: #1e1f22;
+  --muted: #5a6069;
+  --bg: #f4f1ec;
+  --card: #ffffff;
+  --accent: #d65f3a;
+  --accent-dark: #b84d2b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  background: radial-gradient(circle at top, #ffffff 0%, #f4f1ec 55%, #efe8df 100%);
+  color: var(--ink);
+}
+
+.app {
+  min-height: 100vh;
+  padding: 32px 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  letter-spacing: 0.5px;
+}
+
+header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.preview {
+  position: relative;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+  min-height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview img {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  display: none;
+}
+
+.placeholder {
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.controls {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.button-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+button {
+  font-size: 18px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+button:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background: #d2c7c0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.status {
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.progress {
+  font-size: 15px;
+  color: var(--accent-dark);
+  min-height: 18px;
+}
+
+@media (max-width: 900px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

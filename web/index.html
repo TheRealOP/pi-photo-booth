@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Instax Kiosk</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <h1>Instax Print Station</h1>
+        <p>Connect to Mini Link 3 and print the latest booth photo.</p>
+      </header>
+
+      <main class="content">
+        <section class="preview">
+          <img id="latest-image" alt="Latest capture" />
+          <div id="placeholder" class="placeholder">No photo captured yet.</div>
+        </section>
+
+        <section class="controls">
+          <div class="button-row">
+            <button id="connect-btn" type="button">Connect Printer</button>
+            <button id="print-btn" type="button" disabled>Print Latest</button>
+          </div>
+          <div class="status" id="status">Waiting for printer connection.</div>
+          <div class="progress" id="progress"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
